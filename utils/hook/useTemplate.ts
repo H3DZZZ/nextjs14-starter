@@ -1,16 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-
-async function fetchTemplate() {
-  try {
-    return [10, 20, 30, 40];
-  } catch (error) {
-    return error;
-  }
-}
+import { actionTemplate } from "../actions/action-template";
 
 export const useTemplate = () => {
   return useQuery({
     queryKey: ["get-template"],
-    queryFn: () => fetchTemplate(),
+    queryFn: () => actionTemplate(),
   });
 };

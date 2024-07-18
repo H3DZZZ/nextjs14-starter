@@ -1,12 +1,13 @@
-import { userCreate } from "@/utils/db/userCreate";
-import { userUpdate } from "@/utils/db/userUpdate";
+import { userCreate } from "@/utils/functions/user/userCreate";
+import { userUpdate } from "@/utils/functions/user/userUpdate";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
-  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
     throw new Error(
@@ -54,33 +55,59 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
 
-  if (eventType === "user.created") {
-    try {
-      await userCreate({
-        email: payload?.data?.email_addresses?.[0]?.email_address,
-        first_name: payload?.data?.first_name,
-        last_name: payload?.data?.last_name,
-        profile_image_url: payload?.data?.profile_image_url,
-        user_id: payload?.data?.id,
+  console.log("eventType", eventType);
+
+  switch (eventType) {
+    case "user.created":
+      try {
+        await userCreate({
+          email: payload?.data?.email_addresses?.[0]?.email_address,
+          first_name: payload?.data?.first_name,
+          last_name: payload?.data?.last_name,
+          profile_image_url: payload?.data?.profile_image_url,
+          user_id: payload?.data?.id,
+        });
+
+        return NextResponse.json({
+          status: 200,
+          message: "User info inserted",
+        });
+      } catch (error: any) {
+        console.log("error", error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case "user.updated":
+      try {
+        await userUpdate({
+          email: payload?.data?.email_addresses?.[0]?.email_address,
+          first_name: payload?.data?.first_name,
+          last_name: payload?.data?.last_name,
+          profile_image_url: payload?.data?.profile_image_url,
+          user_id: payload?.data?.id,
+        });
+
+        return NextResponse.json({
+          status: 200,
+          message: "User info updated",
+        });
+      } catch (error: any) {
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    default:
+      return new Response("Error occured -- unhandeled event type", {
+        status: 400,
       });
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
   }
 
-  if (eventType === "user.updated") {
-    try {
-      await userUpdate({
-        email: payload?.data?.email_addresses?.[0]?.email_address,
-        first_name: payload?.data?.first_name,
-        last_name: payload?.data?.last_name,
-        profile_image_url: payload?.data?.profile_image_url,
-        user_id: payload?.data?.id,
-      });
-    }
-     catch (error: any) {
-    throw new Error(error.message);
-  }
-  }
   return new Response("", { status: 201 });
 }

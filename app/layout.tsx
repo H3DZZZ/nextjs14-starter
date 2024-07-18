@@ -1,28 +1,42 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
+import Provider from '@/app/provider'
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { NavBar } from '@/components/NavBar'
-import Provider from '@/app/_trpc/provider'
-
-const inter = Inter({ subsets: ['latin'] })
+import { Toaster } from "@/components/ui/sonner"
+import { ClerkProvider } from '@clerk/nextjs'
+import { Analytics } from "@vercel/analytics/react"
+import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans';
+import './globals.css'
+import AuthWrapper from '@/components/wrapper/auth-wrapper'
 
 export const metadata: Metadata = {
-  title: 'Nextjs 14 Starter Template',
-  description: 'Build your next SAAS product',
+  metadataBase: new URL("https://starter.rasmic.xyz"),
+  title: {
+    default: 'Nextjs Starter Kit',
+    template: `%s | Nextjs Starter Kit`
+  },
+  openGraph: {
+    description: 'Build your next SAAS product',
+    images: ['']
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Nextjs Starter ',
+    description: 'Build your next SAAS product.',
+    siteId: "",
+    creator: "@rasmic",
+    creatorId: "",
+    images: [''],
+  },
 }
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
+    <AuthWrapper>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
+        <body className={GeistSans.className}>
           <Provider>
             <ThemeProvider
               attribute="class"
@@ -30,13 +44,13 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <NavBar />
-              {children}
-              <Toaster />
+            {children}
+            <Toaster />
             </ThemeProvider>
           </Provider>
+          <Analytics />
         </body>
       </html>
-    </ClerkProvider>
+    </AuthWrapper>
   )
 }

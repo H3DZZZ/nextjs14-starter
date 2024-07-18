@@ -1,16 +1,20 @@
 "use client"
-import React from 'react'
-import { UserProfile, useUser } from "@clerk/nextjs";
-
+import PageWrapper from "@/components/wrapper/page-wrapper";
+import config from "@/config";
+import { UserProfile } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const UserProfilePage = () => {
-    const { isLoaded, isSignedIn, user } = useUser();
-
-    console.log("user", user)
+    const router = useRouter()
+    if (!config?.auth?.enabled) {
+        router.back()
+    }
     return (
-        <div className="h-full flex items-center justify-center p-9">
-            <UserProfile path="/user-profile" routing="path" />
-        </div>
+        <PageWrapper >
+            <div className="h-full flex items-center justify-center p-9">
+                {config?.auth?.enabled && <UserProfile path="/user-profile" routing="path" />}
+            </div>
+        </PageWrapper>
     )
 }
 
